@@ -14,6 +14,7 @@ To sign, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 <!-- Signatures added here as PRs are merged. Format:
 - **Name**, Role, Affiliation (optional)
 -->
+- **Yedidya Schwartz**, CTO @ Quicklizard.com
 
 ---
 
