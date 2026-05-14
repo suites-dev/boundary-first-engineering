@@ -57,11 +57,12 @@ what it does to itself.
 <details>
 <summary>💡 Where boundaries actually are</summary>
 
-In a typical backend service, the boundaries that bear trust are: the HTTP or gRPC interface published to consumers, the
-database writes and reads, the messages produced to and consumed from queues, the calls to upstream third-party
-services, the events emitted to event buses, and the contracts (OpenAPI, JSON Schema, Protobuf, AsyncAPI) that describe
-each of these. Verification work concentrates here. Internal function calls, private helper modules, and intra-process
-orchestration are not boundaries; they are implementation.
+Trust-bearing boundaries include the HTTP API, database reads and writes, messages sent to or read from a queue, calls
+to a third-party payment service, emitted events, and the contracts that describe them: an OpenAPI document, a protobuf
+file, or an event schema.
+
+Private helpers, internal modules, and in-process orchestration are implementation. Test them when useful, but do not
+treat them as the system's contract.
 
 </details>
 
@@ -81,21 +82,20 @@ same agent, not a clean PR description. The test is provenance, not appearance.
 
 **Outside the loop:**
 
-- Another team publishes an OpenAPI doc for the service you're about to build. You implement against their doc.
-- Compliance writes the rules your data handling must follow. You implement; an audit checks.
-- A product manager writes acceptance scenarios in a separate doc before sprint planning. Your tests run those
-  scenarios.
+- Another team publishes an OpenAPI document before work starts. You build to it.
+- The compliance team writes data-handling rules. The audit checks them.
+- A product manager writes acceptance scenarios before planning. The test runner executes them.
 
 **Borderline:**
 
-- A teammate writes acceptance tests after reading the ticket, before you start coding. Counts if the tests existed
-  before your implementation; doesn't count if they wrote them after seeing your draft.
+- A teammate writes acceptance tests from the ticket before you code. Counts only if they exist before the first
+  implementation draft.
 
 **Inside the loop:**
 
-- You write a unit test next to the function you just wrote.
-- Your agent generates tests for the code it generated. You approve them in the same PR.
-- A reviewer approves your tests after reading your PR description.
+- You write a test for code you just wrote.
+- An agent generates code and checks for the same task. You approve both in one change.
+- A reviewer approves tests after reading the implementation summary.
 
 </details>
 
@@ -110,18 +110,14 @@ the internals work is implementation by another name.
 
 **Thin enough:**
 
-- An OpenAPI doc with the endpoints, request and response shapes, error codes, and the business rules a consumer must
-  understand. Five to fifty pages of YAML for a typical service.
-- A protobuf file with the message types and RPC methods. The wire format is fully specified; the server implementation
-  is not.
-- An event schema listing the events the service publishes, when each is emitted, and what fields each carries.
+- An OpenAPI document with endpoints, request and response shapes, error codes, and consumer-visible rules.
+- A protobuf file with messages and service methods, but no server design.
+- An event schema listing each event, when it is emitted, and its fields.
 
 **Too heavy:**
 
-- A spec that names internal classes, database table layouts, or which library handles JSON parsing. That's
-  implementation, written in prose.
-- A spec long enough that regenerating the service from it requires reading the spec, the implementation, and the diff
-  between them. If the spec and the code together are needed to understand the system, the spec lost its job.
+- A spec that names private modules, database table layout, or parsing choices.
+- A spec that needs the code beside it to make sense. If both are required, the spec is not doing its job.
 
 </details>
 
@@ -135,12 +131,11 @@ the deterministic anchor against which non-deterministic generation can be measu
 <details>
 <summary>💡 What circular validation looks like</summary>
 
-**Circular:** An agent generates an endpoint that returns user data. It generates tests asserting the endpoint returns
-user data. Coverage is 100%. The endpoint silently filters out unsubscribed users; no test catches it because the agent
-didn't notice the requirement either.
+**Circular:** An agent builds an HTTP API that returns account data. It also writes tests saying account data is
+returned. Coverage is high, but inactive accounts are missing because the agent missed that rule in both places.
 
-**Loop broken:** The same endpoint, tested against scenarios a product owner wrote before the agent started. The filter
-bug is caught on the first run, because the scenario didn't come from the same source as the code.
+**Loop broken:** The API is checked against acceptance scenarios a product manager wrote before implementation. The
+missing inactive accounts fail on the first run.
 
 </details>
 
@@ -153,11 +148,11 @@ whether the agent learns from the system or learns to game the human.
 <details>
 <summary>💡 Loops the agent can use vs. loops it can't</summary>
 
-**Fast enough for the agent's inner loop:** type checks, lint rules, unit tests, a single integration test against a
-local containerized database, a schema validation against the OpenAPI spec.
+**Fast enough for the agent's inner loop:** a static type checker, a linter, focused unit tests, one database
+integration test, a schema check against an OpenAPI document.
 
-**Too slow:** a full system test suite, a manual QA pass, a security review, a stakeholder demo. The agent will either
-skip these or shape its work to pass them in name only.
+**Too slow:** a full system test suite, manual QA, a security review, a stakeholder demo. These still matter, but they
+are not a tight correction loop.
 
 </details>
 
@@ -175,11 +170,11 @@ rotate, the guardrails are the deliverable.
 <details>
 <summary>💡 Established guardrails vs. loop-introduced ones</summary>
 
-**Established:** A dependency-cruiser config the architect wrote last year, preventing the data layer from importing
-controllers. An OpenAPI schema check that has gated every PR for six months.
+**Established:** A dependency rule the architect wrote last year, blocking the data layer from depending on the HTTP
+layer. A schema check that has gated every change for six months.
 
-**Loop-introduced:** A lint rule the implementer added in the same PR as the code that triggered it. A test exclusion
-list updated to skip the test the agent's code fails.
+**Loop-introduced:** A linter rule added in the same change as the code it excuses. A test exclusion added to skip the
+failing check.
 
 </details>
 

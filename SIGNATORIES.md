@@ -2,7 +2,8 @@
 
 The people who have signed this manifesto.
 
-A signature endorses the principles, not the prose. Signatories may withdraw their signature at any time. Signatories do not hold copyright over the document; the document is collectively licensed under CC BY 4.0.
+A signature endorses the principles, not the prose. Signatories may withdraw their signature at any time. Signatories do
+not hold copyright over the document; the document is collectively licensed under CC BY 4.0.
 
 To sign, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
