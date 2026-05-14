@@ -1,0 +1,25 @@
+# Notes on Boundary-First Engineering
+
+A set of clarifications on what the manifesto does and does not claim. These are responses to predictable misreadings of the principles, not principles themselves.
+
+---
+
+**Unit testing is dead.** Unit tests remain useful as white-box specs for isolated logic: transformations, calculations, policies, invariants. They specify behavior at small scale. They are the wrong place to prove system behavior, boundary error handling, persistence semantics, transport behavior, or cross-component trust. White-box testing supports implementation. It no longer bears the system's trust.
+
+**Code review is dead.** Review remains valuable for catching design drift, architectural misalignment, and questions of meaning that no schema can encode. It is no longer the primary mechanism for catching defects in agent-generated code; that role belongs to mechanical guardrails. Reviewers do not fail because they got worse. They fail because the volume and density of agent-generated code overwhelm the human capacity to read carefully. Guardrails that cap structural complexity at the source make code reviewable; their absence makes code unreviewable regardless of how many reviewers you add.
+
+**Test-first development is dead.** It is not. Tests written before implementation remain valuable as a design discipline; they force the author to specify behavior before producing it. What the manifesto denies is that test-first development, by itself, constitutes verification. The implementer-written test describes intended behavior; verification still requires an authority statement approved outside the implementation loop. Test-first development and boundary-first verification are complementary, not alternatives.
+
+**This is a return to independent QA.** It is not. The manifesto does not advocate a separate QA team gating merges. It requires that the *artifact* that constitutes verification originate or be approved outside the implementation loop. What counts as "outside" depends on the stakes. From weakest to strongest: a different agent with fresh context (advisory evidence only, not sufficient on its own); a peer reviewer working from independent requirements; a contract authored upstream by someone who will never write the implementation; a scenario stored outside the codebase the implementer can edit; a formal specification or property the implementer cannot rewrite. Teams should match the strength of their independence guarantee to the consequences of getting the verification wrong. The weakest tier supplements; it does not substitute. The claim is about artifact provenance, not organizational structure. Shift-left and "you build it, you run it" remain compatible with this principle, properly understood: implementers still own operational consequences; they do not own the authority statement that verifies their own code.
+
+**Doubles are dead.** Doubles remain appropriate at the line of ownership, wherever you cannot control what is being doubled. The third-party API, the upstream service, the external system you depend on but do not operate: these are legitimate mock-server targets because you cannot verify against what you cannot control. What is dead is the practice of doubling the infrastructure you do operate. Khorikov named this distinction managed and unmanaged; the line still holds.
+
+**Coverage is useless.** Coverage measures what tests reach. That is a real diagnostic. The claim is narrower: coverage cannot stand in for verification, especially when the checks come from the same implementation loop as the code. Use coverage to find what the suite ignores. Do not use it to certify what the suite proves.
+
+**Static analysis replaces judgment.** It does not. Strong linting, dependency analysis, architectural rules, and CI gates are how judgment becomes usable by agents at scale. Humans still decide which rules matter, what tradeoffs are acceptable, and when a guardrail is expressing the wrong constraint. Guardrails encode prior judgment; they do not substitute for the act of judging.
+
+**Pre-merge verification is sufficient.** It is not. Boundary verification before merge proves the system behaves correctly under the scenarios you chose. Once code runs in production, the same boundaries continue to bear trust through telemetry, tracing, structured logging, and runtime contract checking. The pre-merge half of the trust stack is what this document describes; the runtime half is real, necessary, and outside this document's scope.
+
+**Specifications must be programs.** Boundary descriptions are not full specifications of behavior. A type, a schema, a contract describes what crosses a boundary, not what happens inside it. If your specification is heavy enough to be confused with implementation, it has lost its purpose.
+
+**Integration tests replace unit tests.** They do not. They prove different things. Unit tests specify isolated logic from inside the code; boundary tests verify runtime behavior from outside it. Both layers may remain. The claim is about which layer bears the load of trust in the agent era, not about which layer to keep for every behavior.
